@@ -35,6 +35,9 @@ class AutosendImporter(CSVImporter):
                 obj = {'file_':file_, 'version':version}
                 files.append(obj)
         files.sort(key=lambda o: o['version'])
+        if len(files) == 0:
+            print("No candidates found for {}".format(starting_name))
+            exit()
         winner = files[-1]
         verbose and print("-> Using {}".format(winner))
         return os.path.join(parent_dir, winner['file_'])

@@ -78,10 +78,20 @@ class BaseParent(BaseUser):
         return self.idnumber[:4]
 
     def __repr__(self):
-        return "{} '{}' with {} children".format(self.__class__.__name__, self.name, len(self.children))
+        return "<{} '{}'>".format(self.__class__.__name__, self.name)
 
 class BaseTeacher(BaseUser):
     kind = Kind.teacher
+
+class BaseParentChildLink(Base):
+    def _jsonencoder(self, obj):
+        """
+        The value for the "kind" (or any enum found in a branch)
+        becomes {"kind": value}
+        """
+        if isinstance(obj, set):
+            # Sets have to be sorted lists, in order to ensure the character sequence is correct
+            return sorted(list(obj))
 
 class AutosendStudent(BaseAutosend, BaseStudent):
     """
@@ -110,7 +120,7 @@ class AutosendStudent(BaseAutosend, BaseStudent):
         #return (self.name + self._year_of_graduation()).lower().replace(' ', '')
 
     @property
-    def parents(self):
+    def _parents(self):
         return [self._family_id + 'P', self._family_id + 'PP']
 
     @property
@@ -155,14 +165,6 @@ class MoodleStudent(BaseMoodle, BaseStudent):
 class AutosendParent(BaseAutosend, BaseParent):
     """
     """
-    # @property
-    # def cohorts(self):
-    #     ret = ['parentsALL']
-    #     for child in self.children:
-    #         student = self._tree.students.get(child)
-    #         if student:
-    #             ret.extend( ['parents{}'.format(student._grade)] )
-    #     return set(ret)
 
     @property
     def auth(self):
@@ -198,3 +200,9 @@ class MoodleTeacher(BaseMoodle, BaseTeacher):
     _status = 0
     _active = 0
     _dunno = ''
+
+class AutosendParentChildLink(BaseParentChildLink):
+    pass
+
+class MoodleParentChildLink(BaseParentChildLink):
+    pass

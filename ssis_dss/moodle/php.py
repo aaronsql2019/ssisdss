@@ -10,6 +10,7 @@ class PHP:
     """
     Interfaces with php file phpclimoodle.php
     """
+    # putting it here allows us to test pexpect
     _settings = ssis_dss_settings['PHP']
 
     def __init__(self):
@@ -34,8 +35,9 @@ class PHP:
         """
         Interfaces with pexpect
         """
+        sentline = "{} {}".format(routine, cmd)
         try:
-            self.process.sendline(routine + ' ' + cmd)
+            self.process.sendline(sentline)
         except OSError:
             if routine == "QUIT":
                 return # this is expected, nevermind
@@ -64,7 +66,7 @@ class PHP:
         else:
             the_string = self.process.after.decode('utf-8').strip('\n') + ' -> pexpect returned non-understood result: {}'.format(which)
 
-        return {'result': True} if which == 0 else {'result': False, 'message': the_string}
+        return {'result': True, 'sentline':sentline} if which == 0 else {'result': False, 'sentline': sentline, 'message': the_string}
 
     def create_new_course(self, idnumber, fullname):
         """

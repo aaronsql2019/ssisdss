@@ -1,3 +1,5 @@
+from ssis_dss.trees import MoodleTree
+
 from dss.importers.db_importer import PostgresDBImporter
 from ssis_dss.moodle.MoodleInterface import MoodleInterface
 
@@ -29,6 +31,15 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 	Implements initial account creations and creates groups as needed
 	Seperated out this way so that in the consecutive run we can ensure that we everything is already set up properly for enrollments
 	"""
+	def result_bool(self, result):
+		return result['result']
+
+	def success(self, action, result):
+		print('Success: {}'.format(result['sentline']))
+
+	def fail(self, action, result):
+		print(': FAIL: {} {}\n{}\n :'.format(action.message, '(' + resultresult['sentline'] + ')' if hasattr(result, 'sentline') else "", result['message']))
+
 	def new_users(self, action):
 		if not action.idnumber.strip():
 			return {'result': False, 'message': 'No idnumber?'}
@@ -53,11 +64,11 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 		course = action.source
 		return self.php.create_new_course(course.idnumber, course.name)
 
-	def new_groups(self, action):
-		group = action.source
-		course = action.source._tree.courses.get(group.course)
-		if course is None:
-			return {'result': False, 'message': "Not adding group {0.idnumber} because no corresponding course {0.course} in moodle".format(group)}
+	# def new_groups(self, action):
+	# 	group = action.source
+	# 	course = action.source._tree.courses.get(group.course)
+	# 	if course is None:
+	# 		return {'result': False, 'message': "Not adding group {0.idnumber} because no corresponding course {0.course} in moodle".format(group)}
 
 	def new_cohorts(self, action):
 		cohort = action.source
@@ -68,12 +79,28 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 		child = action.dest
 		return self.php.associate_child_to_parent(parent.idnumber, child.idnumber)
 
-class MoodleSecondRunTemplate(MoodleTemplates):
 
-	def add_enrollments_to_students(self, action):
-		user = action.dest.idnumber
-		course = action.attribute
-		return self.php_command('enrol_student_into_course', user, course, group) # just pass the whole schedule object itself
+class MoodleFullTemplate(MoodleFirstRunTemplate):
+
+	@property
+	def _moodle(self):
+		if not hasattr(self, '_moodle_info'):
+			self._moodle_tree = MoodleTree()
+		return self._moodle_tree
+
+	def add_enrollments_to_enrollments(self, action):
+		user = action.dest
+		course, group, role = action.attribute
+		if not self._moodle.courses.get(course):
+			return {'result': False, 'message': "The course {} does not exist in Moodle".format(course)}
+		return self.php.enrol_user_into_course(user.idnumber, course, group, group, role) # just pass the whole schedule object itself
+
+	def remove_enrollments_from_enrollments(self, action):
+		user = action.dest
+		course, group, role = action.attribute
+		if not self._moodle.courses.get(course):
+			return {'result': False, 'message': "The course {} does not exist in Moodle".format(course)}
+		return self.php.unenrol_user_from_course(user.idnumber, course)
 
 	def update_user_profile(self, action, column):
 		who = action.dest
@@ -93,3 +120,5 @@ class MoodleSecondRunTemplate(MoodleTemplates):
 		return self.update_user_profile(action, 'firstname')
 	def update_lastname(self, action):
 		return self.update_user_profile(action, 'lastname')
+	def update_email(self, action):
+		return self.update_user_profile(action, 'email')

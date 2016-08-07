@@ -44,7 +44,7 @@ class AutosendStudentsImporter(AutosendImporter):
 
 class AutosendTeachersImporter(AutosendImporter):
     def filter_out(self, **kwargs):
-        return kwargs['_active'] != '1'
+        return kwargs['_active'] != '1' or kwargs['email'] == "" or not kwargs['idnumber'].isdigit()
 
 class AutosendParentsImporter(DefaultImporter):
     """
@@ -63,15 +63,27 @@ class AutosendParentsImporter(DefaultImporter):
                 'email': parent1_email,
                 'lastfirst': parent1_email + ', Parent',
                 'username': parent1,
-                'children': set([student.idnumber]),
             }
             yield {
                 'idnumber': parent2,
                 'email': parent2_email,
                 'username': parent2,
                 'lastfirst': parent2_email + ', Parent',
-                'children': set([student.idnumber]),
             }
+
+class AutosendParentChildLinkImporter(DefaultImporter):
+    def readin(self):
+        branch = self._tree.students
+        for student in branch.get_objects():
+            for parent in student._parents:
+                yield {
+                    'idnumber': student.idnumber,
+                    'links': set([parent])
+                }
+                yield {
+                    'idnumber': parent,
+                    'links': set([student.idnumber])
+                }
 
 class AutosendCohortsImporter(DefaultImporter):
     def readin(self):
@@ -84,7 +96,9 @@ class AutosendCohortsImporter(DefaultImporter):
                 elif user.kind == Kind.parent:
                     cohorts = set()
                     parent = self._tree.parents.get(user.idnumber)
-                    for c in parent.children:
+                    parentlink = self._tree.parentchildlink.get(parent.idnumber)
+                    # from IPython import embed;embed();exit()
+                    for c in parentlink.links:
                         child = self._tree.students.get(c)
                         cohorts.update({c.replace('students', 'parents') for c in child._cohorts})
                 elif user.kind == Kind.teacher:
@@ -160,7 +174,7 @@ class AutosendGroupImporter(DefaultImporter):
                 'section': section,
                 'students': set([student]),
                 'teachers': set([teacher]),
-                'parents': set(sobj.parents)
+                'parents': self._tree.parentchildlink.get(student).links
             }
 
 class AutosendEnrollmentsImporter(DefaultImporter):
@@ -182,7 +196,7 @@ class AutosendEnrollmentsImporter(DefaultImporter):
                 'roles': ['student']
             }
 
-            for parent in self._tree.students.get(student).parents:
+            for parent in self._tree.parentchildlink.get(student).links:
                 yield {
                     'idnumber': parent,
                     'courses': [course],

@@ -19,12 +19,18 @@ class AbstractTree(DataStoreTree):
                 print("No such user {}".format(idnumber))
             else:
                 print('User {0.kind} "{0.name}" [{0.idnumber}] {1}'.format(user, "({})".format(user.homeroom) if hasattr(user, 'homeroom') else ''))
-                if hasattr(user, 'parents'):
-                    parent_output = []
-                    for parent in user.parents:
-                        pobj = self.parents.get(parent)
-                        parent_output.append( "Parent: \"{0.name}\": {0.idnumber}".format(pobj) )
-                    print("\n".join(parent_output))
+                links = self.parentchildlink.get(user.idnumber).links
+                link_output = []
+                for link in links:
+                    lobj = self.users.get(link)
+                    link_output.append( "\t=> Linked to {0.kind} {0.name} ({0.idnumber})".format(lobj) )
+                print("\n".join(link_output))
+                # if hasattr(user, 'parents'):
+                #     parent_output = []
+                #     for parent in user.parents:
+                #         pobj = self.parents.get(parent)
+                #         parent_output.append( "Parent: \"{0.name}\": {0.idnumber}".format(pobj) )
+                #     print("\n".join(parent_output))
 
                 cohorts = self.cohorts.get(idnumber)
                 if cohorts is None:

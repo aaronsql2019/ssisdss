@@ -208,11 +208,13 @@ def map_codes(short, grade, higher_lower):
 
 		'PSYHON1112': 'SSPSYS12' if grade == '12' else 'SSPSYSH1112',
 		'SSPSYSH1112': 'SSPSYS12' if higher_lower == 'S' and grade == '12' else 'SSPSYSH1112',
-		'PEHEAHS1': 'PEHEASH1112'
+		'PEHEAHS1': 'PEHEASH1112',
 
 						 #'DESIG9': 'GRAPHICDESIGN9',
 						 #'DESIG10': 'GRAPHICDESIGN10'   TECOM10, TECOM9 deleted, TECOMSH1112 becomes TECOM1112CLARK, TEFOO9 TEFOO10 have been killed, TEMAT10 & 9 have been killed, TEFOOHS1 has been killed (and probably never ran)
-		
+
+		'HUMAN6': 'ENGA6',
+		'HUMAN7': 'ENGA7'
 		
 		# 
 

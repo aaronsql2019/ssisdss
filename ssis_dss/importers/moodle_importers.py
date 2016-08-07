@@ -30,10 +30,6 @@ class MoodleStudentsImporter(MoodleImporter):
 class MoodleParentsImporter(MoodleImporter):
     def readin(self):
         # Build cohort information to be used below
-        children = defaultdict(set)
-        users = self.import_parents_with_links('parentsALL')
-        for parent, student in users:
-            children[parent.idnumber].add(student.idnumber)
 
         parents = self.users_enrolled_in_this_cohort('parentsALL')
 
@@ -47,7 +43,6 @@ class MoodleParentsImporter(MoodleImporter):
                 'username': parent.username,
                 'email': parent.email,
                 'homeroom': parent.department,
-                'children': children[parent.idnumber],
             }
 
 class MoodleTeachersImporter(MoodleImporter):
@@ -63,6 +58,20 @@ class MoodleTeachersImporter(MoodleImporter):
             }
 
 # Users is a hybrid
+
+class MoodleParentChildLinkImporter(MoodleImporter):
+    def readin(self):
+        users = self.import_parents_with_links('parentsALL')
+        for parent, student in users:
+            yield {
+                'idnumber': student.idnumber,
+                'links': set([parent.idnumber])
+            }
+            yield {
+                'idnumber': parent.idnumber,
+                'links': set([student.idnumber])
+            }
+
 
 class StrandedUsersTable(MoodleImporter):
     def readin(self):

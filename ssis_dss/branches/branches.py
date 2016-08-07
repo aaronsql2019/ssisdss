@@ -30,6 +30,9 @@ class TeacherBranch:
 class UsersBranch:
 	_branchname = 'users'
 
+class ParentChildLinkBranch:
+	_branchname = 'parentchildlink'
+
 class StrandedUsersTable:
 	_branchname = 'strandedusers'
 
@@ -80,6 +83,11 @@ class AutosendUsers(AutosendBranches, UsersBranch):
 	_klass = None
 	_importer = 'ssis_dss.importers.hybrid_importers.UsersImporter'
 
+class AutosendParentChildLink(AutosendBranches, ParentChildLinkBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.user_model.AutosendParentChildLink'
+	_importer = 'ssis_dss.importers.autosend_importers.AutosendParentChildLinkImporter'
+
 class AutosendCohorts(AutosendBranches, CohortsBranch):
 	order = inc()
 	_klass = 'ssis_dss.model.cohort_model.AutosendCohort'
@@ -127,6 +135,11 @@ class MoodleUsers(MoodleBranches, UsersBranch):
 	order = inc()
 	_klass = None
 	_importer = 'ssis_dss.importers.hybrid_importers.UsersImporter'
+
+class MoodleParentChildLink(MoodleBranches, ParentChildLinkBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.user_model.MoodleParentChildLink'
+	_importer = 'ssis_dss.importers.moodle_importers.MoodleParentChildLinkImporter'
 
 class MoodleStrandedUsers(MoodleBranches, StrandedUsersTable):
 	order = inc()

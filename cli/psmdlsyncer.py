@@ -46,12 +46,13 @@ def psmdlsyncer_go(obj):
     # ensures the users are in the right cohorts
     autosendfr >> moodlefr
 
+    print('Running second run')
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
 
-
-    # Now sync
-    +obj.source
-    +obj.dest
-    obj.source >> obj.dest
+    autosend >> moodle
 
 
 @psmdlsyncer.command("output")

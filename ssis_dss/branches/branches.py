@@ -193,6 +193,16 @@ class AutosendFirstrunUsers(AutosendFirstrunBranches, UsersBranch):
 	_klass = None
 	_importer = 'ssis_dss.importers.hybrid_importers.UsersImporter'
 
+class AutosendFirstrunParentChildLink(AutosendFirstrunBranches, ParentChildLinkBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.user_model.AutosendParentChildLink'
+	_importer = 'ssis_dss.importers.autosend_importers.AutosendParentChildLinkImporter'
+
+class AutosendFirstrunCohorts(AutosendFirstrunBranches, CohortsBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.cohort_model.AutosendCohort'
+	_importer = 'ssis_dss.importers.autosend_importers.AutosendCohortsImporter'
+
 inc.reset()
 class MoodleFirstrunStudents(MoodleFirstrunBranches, StudentBranch):
 	order = inc()
@@ -213,3 +223,13 @@ class MoodleFirstrunUsers(MoodleFirstrunBranches, UsersBranch):
 	order = inc()
 	_klass = None
 	_importer = 'ssis_dss.importers.hybrid_importers.UsersImporter'
+
+class MoodleFirstrunParentChildLink(MoodleFirstrunBranches, ParentChildLinkBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.user_model.MoodleParentChildLink'
+	_importer = 'ssis_dss.importers.moodle_importers.MoodleParentChildLinkImporter'
+
+class MoodleFirstrunCohorts(MoodleFirstrunBranches, CohortsBranch):
+	order = inc()
+	_klass = 'ssis_dss.model.cohort_model.MoodleCohort'
+	_importer = 'ssis_dss.importers.moodle_importers.MoodleCohortsImporter'

@@ -44,6 +44,8 @@ def psmdlsyncer_go(obj):
     +autosendfr
     +moodlefr
     # ensures the users are in the right cohorts
+    pause = True
+
     autosendfr >> moodlefr
 
     print('Running second run')

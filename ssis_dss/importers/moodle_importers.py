@@ -88,13 +88,10 @@ class MoodleCohortsImporter(MoodleImporter):
         for user_idnumber, cohort_idnumber in self.get_cohorts():
             user = self._tree.users.get(user_idnumber)
             if not user:
-                if self._tree.strandedusers.get(user_idnumber):
-                    continue
-                else:
-                    continue # TODO: Make an error of some kind
+                continue
             yield {
-                'idnumber': user_idnumber,
-                'cohorts': [cohort_idnumber],
+                'idnumber': cohort_idnumber,
+                'members': [user_idnumber],
             }
 
 class MoodleScheduleImporter(MoodleImporter):

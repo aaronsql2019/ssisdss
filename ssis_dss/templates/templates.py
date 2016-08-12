@@ -35,7 +35,7 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 		return result['result']
 
 	def success(self, action, result):
-		print('Success: {}'.format(result['sentline']))
+		print('Success: {}'.format(result['sentline'] if hasattr(result, 'sentline') else action.message))
 
 	def fail(self, action, result):
 		print(': FAIL: {} {}\n{}\n :'.format(action.message, '(' + resultresult['sentline'] + ')' if hasattr(result, 'sentline') else "", result['message']))
@@ -45,14 +45,8 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 			return {'result': False, 'message': 'No idnumber?'}
 		else:
 			user = action.source
-			result = self.php.create_account(user.username, user.email, user.firstname, user.lastname, user.idnumber)
-			if not result['result'] is not True:
-				return result
-			else:
-				# FIXME: Theses results are lost! Use handle into template ...
-				for cohort_idnumber in user.cohorts:
-					self.php.add_user_to_cohort(user.idnumber, cohort_idnumber)
-			return result
+			return self.php.create_account(user.username, user.email, user.firstname, user.lastname, user.idnumber)
+
 	def new_parents(self, action):
 		return self.new_users(action)
 	def new_staff(self, action):
@@ -79,6 +73,15 @@ class MoodleFirstRunTemplate(MoodleTemplates):
 		child = action.dest
 		return self.php.associate_child_to_parent(parent.idnumber, child.idnumber)
 
+	def add_members_to_cohorts(self, action):
+		cohort_idnumber = action.idnumber
+		user_idnumber = action.attribute
+		return self.php.add_user_to_cohort(user_idnumber, cohort_idnumber)
+
+	def remove_members_from_cohorts(self, action):
+		cohort_idnumber = action.idnumber
+		user_idnumber = action.attribute
+		return self.php.remove_user_from_cohort(user_idnumber, cohort_idnumber)
 
 class MoodleFullTemplate(MoodleFirstRunTemplate):
 
@@ -87,6 +90,16 @@ class MoodleFullTemplate(MoodleFirstRunTemplate):
 		if not hasattr(self, '_moodle_info'):
 			self._moodle_tree = MoodleTree()
 		return self._moodle_tree
+
+	def add_cohorts_to_cohorts(self, action):
+		user_idnumber = action.idnumber
+		cohort_idnumber = action.attribute
+		return self.php.add_user_to_cohort(user_idnumber, cohort_idnumber)
+
+	def remove_cohorts_from_cohorts(self, action):
+		user_idnumber = action.idnumber
+		cohort_idnumber = action.attribute
+		return self.php.remove_user_from_cohort(user_idnumber, cohort_idnumber)
 
 	def add_enrollments_to_enrollments(self, action):
 		user = action.dest

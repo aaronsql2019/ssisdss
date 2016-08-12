@@ -7,8 +7,8 @@ class BaseCohort(Base):
         """
         Kind: 'Name' (idnumber)
         """
-        ret = ["<Total of {length} cohorts for user {user_idnumber}:".format(user_idnumber=self.idnumber, length=len(self.cohorts))]
-        ret.append('\t' + ", ".join(self.cohorts))
+        ret = ["<Total of {number} members for cohort {idnumber}:".format(idnumber=self.idnumber, number=len(self.members))]
+        ret.append('\t' + ", ".join(self.members))
         return "\n".join(ret)
 
 class BaseAutosend:

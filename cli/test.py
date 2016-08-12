@@ -58,6 +58,6 @@ def ssisdss_testpexpect(obj):
     while here.strip() != "quit":
         print("Manually type the command with params")
         here = input()
-        p.command(here.strip(), '')
+        print(p.command(here.strip(), ''))
 
 

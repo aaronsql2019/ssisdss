@@ -111,8 +111,8 @@ class AutosendCohortsImporter(DefaultImporter):
 
                 for cohort in cohorts:
                     yield {
-                        'idnumber': user_id,
-                        'cohorts': [cohort]
+                        'idnumber': cohort,
+                        'members': [user_id]
                     }
 
 class ShortcodeFilterOuter(AutosendImporter):
@@ -170,14 +170,16 @@ class AutosendGroupImporter(DefaultImporter):
             section = item.section
 
             sobj = self._tree.students.get(student)
-
+            if not sobj:
+                print('Why is there not this guy: {}'.format(student))
+                continue
             yield {
                 'idnumber': group,
                 'course': course,
                 'section': section,
                 'students': set([student]),
                 'teachers': set([teacher]),
-                'parents': self._tree.parentchildlink.get(student).links
+                'parents': sobj._parents
             }
 
 class AutosendEnrollmentsImporter(DefaultImporter):
@@ -199,7 +201,12 @@ class AutosendEnrollmentsImporter(DefaultImporter):
                 'roles': ['student']
             }
 
-            for parent in self._tree.parentchildlink.get(student).links:
+            sobj = self._tree.students.get(student)
+            if not sobj:
+                print('Student in schedule but not in district info: {}'.format(student))
+                continue
+
+            for parent in sobj._parents:
                 yield {
                     'idnumber': parent,
                     'courses': [course],

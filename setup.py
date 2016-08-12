@@ -6,7 +6,7 @@ setup(
     description = "Specialized Syncing software",
     author = "Adam Morris",
     author_email = "amorris@mistermorris.com",
-    install_requires = ['click', 'sqlalchemy', 'psycopg2'],
+    install_requires = ['click', 'sqlalchemy', 'psycopg2', 'pexpect'],
     classifiers = [
         "Programming Language :: Python :: 3",
         "Development Status :: 4 - Beta",

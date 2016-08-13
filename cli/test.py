@@ -60,9 +60,9 @@ def ssisdss_testpexpect(obj):
         here = input()
         print(p.command(here.strip(), ''))
 
-@ssisdss_test.command("output_batch")
+@ssisdss_test.command("output_enrollments")
 @click.pass_obj
-def output_batch(obj):    
+def output_enrollments(obj):    
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
@@ -74,5 +74,31 @@ def output_batch(obj):
                 course, group, role = action.attribute
                 print("deenrol_user_from_course {0.idnumber} {1}".format(action, course))
 
+@ssisdss_test.command("output_group_additions")
+@click.pass_obj
+def output_group_additions(obj):    
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
 
+    for action in autosend - moodle:
+        if action.idnumber.startswith('4813P'):
+            print(action)
+
+@ssisdss_test.command("output_deenrol_old_parents")
+@click.pass_obj
+def output_deenrol_old_parents(obj):    
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
+
+    for idnumber in moodle.parents.keys() - autosend.parents.keys():
+        if not idnumber.endswith('PP'):
+            enrollment_data = moodle.enrollments.get(idnumber)
+            if enrollment_data:
+                for enrollment in enrollment_data.enrollments:
+                    course, group, role = enrollment
+                    print("deenrol_user_from_course {0} {1}".format(idnumber, course))
 

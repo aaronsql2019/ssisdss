@@ -19,7 +19,7 @@ class BaseEnrollment(Base):
         ret.sort(key=lambda x: x[0])
         return ret
 
-    def __repr__(self):
+    def __str__(self):
         ret = []
         ret.append("<Total of {length} enrollments for user {user_idnumber}: ".format(user_idnumber=self.idnumber, length=len(self.enrollments)))
         for enrollment in self.enrollments:
@@ -27,6 +27,9 @@ class BaseEnrollment(Base):
             ret.append("\t({} {} {})".format(course, group, role))
         ret[-1] += ">"
         return "\n".join(ret)
+
+    def __repr__(self):
+        return "{}.{}.get({})".format(self._origtreename, self._branchname, self.idnumber)
 
 class BaseAutosend:
     """

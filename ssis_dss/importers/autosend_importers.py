@@ -171,7 +171,7 @@ class AutosendGroupImporter(DefaultImporter):
 
             sobj = self._tree.students.get(student)
             if not sobj:
-                print('Why is there not this guy: {}'.format(student))
+                # TODO: raiseerror instead?
                 continue
             yield {
                 'idnumber': group,

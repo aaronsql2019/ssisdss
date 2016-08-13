@@ -39,7 +39,7 @@ class BaseUser(Base):
         """
         l = len('kind.')  # 5
         kind = str(self.kind).title()[l:]
-        return "<{}.{}.get('{}')>".format(self._treename, self._branchname, self.idnumber)
+        return "<{}.{}.get('{}')>".format(self._origtreename, self._branchname, self.idnumber)
 
 # Now define properties of students and teachers that apply to them all
 class BaseAutosend:

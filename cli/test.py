@@ -60,4 +60,19 @@ def ssisdss_testpexpect(obj):
         here = input()
         print(p.command(here.strip(), ''))
 
+@ssisdss_test.command("output_batch")
+@click.pass_obj
+def output_batch(obj):    
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
+
+    for action in autosend - moodle:
+        if action.func_name in ['remove_enrollments_from_enrollments']:
+            if not action.idnumber.endswith('PP'):
+                course, group, role = action.attribute
+                print("deenrol_user_from_course {0.idnumber} {1}".format(action, course))
+
+
 

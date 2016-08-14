@@ -31,10 +31,8 @@ def ssisdss_moodleinterface(obj):
 
     from ssis_dss.importers.moodle_importers import MoodleImporter
     moodle_tree = MoodleTree()
-
     moodle = MoodleImporter(moodle_tree, moodle_tree.students)
-    for item in moodle.import_students_with_links():
-        print(item)
+
     from IPython import embed;embed()
 
 @ssisdss_test.command("MoodleSchedule")
@@ -61,8 +59,9 @@ def ssisdss_testpexpect(obj):
         print(p.command(here.strip(), ''))
 
 @ssisdss_test.command("output_enrollments")
+@click.argument('path', type=click.File(mode='w'), default=None)
 @click.pass_obj
-def output_enrollments(obj):    
+def output_enrollments(obj, path):
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
@@ -72,7 +71,7 @@ def output_enrollments(obj):
         if action.func_name in ['remove_enrollments_from_enrollments']:
             if not action.idnumber.endswith('PP'):
                 course, group, role = action.attribute
-                print("deenrol_user_from_course {0.idnumber} {1}".format(action, course))
+                path.write("deenrol_user_from_course {0.idnumber} {1}\n".format(action, course))
 
 @ssisdss_test.command("output_group_additions")
 @click.pass_obj
@@ -112,7 +111,8 @@ def output_remove_old_groups(obj, path):
     +moodle
 
     for idnumber in moodle.groups.keys() - autosend.groups.keys():
-        group = moodle.groups.get(idnumber)
-        if group:
-            path.write("delete_group {0.idnumber}\n".format(group))
+        if idnumber:
+            group = moodle.groups.get(idnumber)
+            if group and group.idnumber:
+                path.write("delete_group_for_course '{0.idnumber}'\n".format(group))
 

@@ -824,13 +824,18 @@ class MoodleInterface(MoodleInter):
 
     def get_groups(self):
         with self.db_session() as session:
-
             statement = session.query(Group.idnumber, User.idnumber).\
                 select_from(GroupsMember).\
                     join(Group, GroupsMember.groupid == Group.id).\
-                    join(User, GroupsMember.userid == User.id).\
-                    filter(User.deleted==0)
+                    outerjoin(User, GroupsMember.userid == User.id)
+        return statement.all()
 
+    def get_all_groups(self):
+        """
+        Get all groups
+        """
+        with self.db_session() as session:
+            statement = session.query(Group)
         return statement.all()
 
     def clear_active_timetable_data(self):

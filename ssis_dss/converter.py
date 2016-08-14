@@ -142,19 +142,13 @@ def straight_converts(short, long_):
 		'FREB_06': 'FRELA67_PH2',
 		'FREB_07': 'FRELA67_PH2',
 		'FREB_09': 'FRELA910',
-		'HROOM_12': 'HROOM_1112',
-		'HROOM_11': 'HROOM_1112',
-		'HROOM_10': 'HROOM_10',
-		'HROOM_09': 'HROOM_09',
-		'HROOM_08': 'HROOM_08',
-		'HROOM_07': 'HROOM_10',
-		'HROOM_06': 'HROOM_09',
-		'HROOM_08': 'HROOM_08',
 		'HSDMAT10': 'MATST10',
 		'PHYHON11': 'SSPHYSH1112',
 		'PHYHON12': 'SSPHYSH1112',
 		'HSDPSY12': 'SSPSYSH1112',
 		'HSDPSY11': 'SSPSYSH1112',
+		'LIBRA_10': 'STDSKL10',
+		'LIBRA_09': 'STDSKL9',
 	}.get(short)
 	if new_short:
 		return new_short, long_

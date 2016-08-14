@@ -128,14 +128,30 @@ class MoodleGroupImporter(MoodleImporter):
 
     def readin(self):
         for group_idnumber, user_idnumber in self.get_groups():
-            split = group_idnumber.split('-') 
-            section = group_idnumber.split('-')[-1]
+            if '-' in group_idnumber:
+                split = group_idnumber.split('-') 
+                section = group_idnumber.split('-')[-1]
+            else:
+                section = ''
 
             yield {
                 'idnumber': group_idnumber,
                 'section': section,
                 '_short_code': '',
                 'members': set([user_idnumber])
+            }
+
+        for group in self.get_all_groups():
+            if '-' in group_idnumber:
+                split = group_idnumber.split('-') 
+                section = group_idnumber.split('-')[-1]
+            else:
+                section = ''
+
+            yield {
+                'idnumber': group.idnumber,
+                'section': section,
+                'members': set()
             }
 
 

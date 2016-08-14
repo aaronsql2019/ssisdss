@@ -88,7 +88,7 @@ def output_group_additions(obj):
 
 @ssisdss_test.command("output_deenrol_old_parents")
 @click.pass_obj
-def output_deenrol_old_parents(obj):    
+def output_deenrol_old_parents(obj):
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
@@ -101,4 +101,18 @@ def output_deenrol_old_parents(obj):
                 for enrollment in enrollment_data.enrollments:
                     course, group, role = enrollment
                     print("deenrol_user_from_course {0} {1}".format(idnumber, course))
+
+@ssisdss_test.command("output_remove_old_groups")
+@click.argument('path', type=click.File(mode='w'), default=None)
+@click.pass_obj
+def output_remove_old_groups(obj, path):
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
+
+    for idnumber in moodle.groups.keys() - autosend.groups.keys():
+        group = moodle.groups.get(idnumber)
+        if group:
+            path.write("delete_group {0.idnumber}\n".format(group))
 

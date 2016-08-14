@@ -122,53 +122,22 @@ class MoodleCourseImporter(MoodleImporter):
             }
 
 class MoodleGroupImporter(MoodleImporter):
-    def filter_out(self, **kwargs):
-        return len(kwargs['idnumber'].split('-')) != 3
+    # FIXME: Have a setting that allows to filter out
+    # def filter_out(self, **kwargs):
+    #     return len(kwargs['idnumber'].split('-')) != 3
 
     def readin(self):
-        """
-        TODO: How to get this with SQL?
-        """
-        for key in self._tree.schedule.keys():
-            item = self._tree.schedule.get(key)
-            user_idnumber = item.user_idnumber
-            course = item.course
-            group = item.group
-            role = item.role
-            split = group.split('-')
-            section = split[-1] if len(split) == 3 else '<>'
+        for group_idnumber, user_idnumber in self.get_groups():
+            split = group_idnumber.split('-') 
+            section = group_idnumber.split('-')[-1]
 
-            if role == 'student':
-                yield {
-                    'idnumber': group,
-                    'section': section,
-                    'course': course,
+            yield {
+                'idnumber': group_idnumber,
+                'section': section,
+                '_short_code': '',
+                'members': set([user_idnumber])
+            }
 
-                    '_shortcode': '',
-                    'students': set([user_idnumber]),
-                    'teachers': set(),
-                    'parents': set()
-                }
-            elif role == 'editingteacher':
-                yield {
-                    'idnumber': group,
-                    'section': section,
-                    'course': course,
-
-                    'students': set(),
-                    'teachers': set([user_idnumber]),
-                    'parents': set()
-                }
-            elif role == 'parent':
-                yield {
-                    'idnumber': group,
-                    'section': section,
-                    'course': course,
-
-                    'students': set(),
-                    'teachers': set(),
-                    'parents': set([user_idnumber])
-                }
 
 class MoodleEnrollmentsImporter(MoodleImporter):
 

@@ -822,6 +822,17 @@ class MoodleInterface(MoodleInter):
         for item in statement.all():
             yield item
 
+    def get_groups(self):
+        with self.db_session() as session:
+
+            statement = session.query(Group.idnumber, User.idnumber).\
+                select_from(GroupsMember).\
+                    join(Group, GroupsMember.groupid == Group.id).\
+                    join(User, GroupsMember.userid == User.id).\
+                    filter(User.deleted==0)
+
+        return statement.all()
+
     def clear_active_timetable_data(self):
         with self.db_session() as session:
             statement = session.query(SsisTimetableInfo)

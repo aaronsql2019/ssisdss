@@ -100,7 +100,6 @@ class AutosendCohortsImporter(DefaultImporter):
                     cohorts = set()
                     parent = self._tree.parents.get(user.idnumber)
                     parentlink = self._tree.parentchildlink.get(parent.idnumber)
-                    # from IPython import embed;embed();exit()
                     for c in parentlink.links:
                         child = self._tree.students.get(c)
                         cohorts.update({c.replace('students', 'parents') for c in child._cohorts})
@@ -115,7 +114,7 @@ class AutosendCohortsImporter(DefaultImporter):
                         'members': [user_id]
                     }
 
-class ShortcodeFilterOuter(AutosendImporter):
+class ScheduleImporter(AutosendImporter):
     def kwargs_preprocessor(self, kwargs):
         """
         Translate the course shortcode
@@ -134,27 +133,30 @@ class ShortcodeFilterOuter(AutosendImporter):
     def filter_out(self, **kwargs):
         return kwargs['course'].startswith('X')
 
-class IdnumberFilterOuter(AutosendImporter):
+class CourseImporter(AutosendImporter):
     def kwargs_preprocessor(self, kwargs):
         """
         Translate the course shortcode
         """
-        short, long_ = convert_short_long(kwargs['idnumber'], kwargs['name'])
-        kwargs['_shortcode'] = kwargs['idnumber']
+        shortcode = kwargs['idnumber']
+        short, long_ = convert_short_long(shortcode, kwargs['name'])
+        kwargs['_shortcode'] = shortcode
         kwargs['moodle_shortcode'] = short
         kwargs['name'] = long_
         kwargs['idnumber'] = short
+        if shortcode == 'MATHSD11':
+            from IPython import embed;embed();exit()
         return kwargs
 
     def filter_out(self, **kwargs):
         return kwargs['idnumber'].startswith('X')
 
 class AutosendCourseImporter(TranslatedCSVImporter):
-    klass = IdnumberFilterOuter
+    klass = CourseImporter
     translate = {'ssis_dist': ['ssis_elem', 'ssis_sec']}
 
 class AutosendScheduleImporter(TranslatedCSVImporter):
-    klass = ShortcodeFilterOuter
+    klass = ScheduleImporter
     translate = {'ssis_dist': ['ssis_elem', 'ssis_sec']}
 
 class AutosendGroupImporter(DefaultImporter):
@@ -172,14 +174,16 @@ class AutosendGroupImporter(DefaultImporter):
             sobj = self._tree.students.get(student)
             if not sobj:
                 # TODO: raiseerror instead?
+                # This can happen when student is in the schedule but not in info
                 continue
+            members = [student, teacher]
+            members.extend(sobj._parents)
+
             yield {
                 'idnumber': group,
                 'course': course,
                 'section': section,
-                'students': set([student]),
-                'teachers': set([teacher]),
-                'parents': sobj._parents
+                'members': set(members),
             }
 
 class AutosendEnrollmentsImporter(DefaultImporter):

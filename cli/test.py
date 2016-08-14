@@ -126,9 +126,46 @@ def output_remove_old_groups(obj, path):
     +autosend
     +moodle
 
+    from IPython import embed;embed();exit()
+
     for idnumber in moodle.groups.keys() - autosend.groups.keys():
         if idnumber:
             group = moodle.groups.get(idnumber)
             if group and group.idnumber:
                 path.write("delete_group_for_course '{0.idnumber}'\n".format(group))
 
+@ssisdss_test.command("output_remove_old_groups")
+@click.argument('path', type=click.File(mode='w'), default=None)
+@click.pass_obj
+def output_remove_old_groups(obj, path):
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
+
+    for idnumber in moodle.groups.keys() - autosend.groups.keys():
+        if idnumber:
+            group = moodle.groups.get(idnumber)
+            if group and group.idnumber:
+                path.write("delete_group_for_course '{0.idnumber}'\n".format(group))
+
+
+@ssisdss_test.command("output_course_mappings")
+@click.argument('path', type=click.File(mode='w'), default=None)
+@click.pass_obj
+def output_remove_old_courses(obj, path):
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    +autosend
+    +moodle
+
+    from ssis_dss.importers.moodle_importers import MoodleImporter
+    moodle = MoodleImporter(moodle, moodle.students)
+    existing_courses = []
+
+    for course_idnumber, _, _ in moodle.get_teaching_learning_courses():
+        existing_courses.append(course_idnumber)
+
+    for course in autosend.courses.values():
+        comment = "present" if course.idnumber in existing_courses else "MISSING"
+        print("{comment}: {orig} -> {translated}".format(orig=course._shortcode, translated=course.moodle_shortcode, comment=comment))

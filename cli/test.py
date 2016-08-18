@@ -98,11 +98,16 @@ def output_deenrol_old_parents_students(obj, path):
     moodledb = MoodleImporter(moodle, moodle.students)
 
     old_parents = moodle.parents.keys() - autosend.parents.keys()
+    old_students = moodle.students.keys() - autosend.students.keys()
+
+    old_users = old_parents.union(old_students)
+
     for user_idnumber, enrollment_type, course_idnumber in moodledb.get_user_enrollments():
-        if user_idnumber.endswith('PP'):
-            continue
-        if enrollment_type == 'manual' and course_idnumber and not course_idnumber.startswith('OLP:'):
-            path.write("deenrol_user_from_course {0} {1}\n".format(user_idnumber, course_idnumber))
+        if user_idnumber in old_users:
+            if user_idnumber.endswith('PP'):
+                continue
+            if enrollment_type == 'manual' and course_idnumber and not course_idnumber.startswith('OLP:'):
+                path.write("deenrol_user_from_course {0} {1}\n".format(user_idnumber, course_idnumber))
 
 @ssisdss_test.command("output_deenrol_old_students")
 @click.option('--verbose', default=False, help="Output stuff")

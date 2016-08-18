@@ -384,8 +384,8 @@ class MoodleInterface(MoodleInter):
                         join(RoleAssignment, RoleAssignment.contextid == Context.id).\
                         join(User, User.id == RoleAssignment.userid).\
                         join(Role, Role.id == RoleAssignment.roleid).\
-                        join(GroupsMember, GroupsMember.userid == User.id).\
-                        join(Group, and_(
+                        outerjoin(GroupsMember, GroupsMember.userid == User.id).\
+                        outerjoin(Group, and_(
                             Group.id == GroupsMember.groupid,
                             Group.courseid == Course.id
                             )).\
@@ -393,12 +393,12 @@ class MoodleInterface(MoodleInter):
                             and_(
                                 #CourseCategory.path == ('/{}'.format(self.TEACHING_LEARNING_CATEGORY_ID)),   # TODO: get roleid on __init__
                                 CourseCategory.path.like('/{}/%'.format(self.TEACHING_LEARNING_CATEGORY_ID)),   # TODO: get roleid on __init__
-                                Group.name != None,
                                 Course.idnumber != '',
                                 User.idnumber != '',
                                 User.deleted == 0
                             )).\
                         order_by(asc(Role.id))   # sort by role.id because it's in the natural order expected (teachers first, then students, then parents)
+
             for item in schedule.all():
                 yield item
 

@@ -86,8 +86,9 @@ def output_group_additions(obj):
             print(action)
 
 @ssisdss_test.command("output_deenrol_old_parents")
+@click.argument('path', type=click.File(mode='w'), default=None)
 @click.pass_obj
-def output_deenrol_old_parents(obj):
+def output_deenrol_old_parents(obj, path):
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
@@ -99,23 +100,32 @@ def output_deenrol_old_parents(obj):
             if enrollment_data:
                 for enrollment in enrollment_data.enrollments:
                     course, group, role = enrollment
-                    print("deenrol_user_from_course {0} {1}".format(idnumber, course))
+                    path.write("deenrol_user_from_course {0} {1}\n".format(idnumber, course))
 
 @ssisdss_test.command("output_deenrol_old_students")
+@click.option('--verbose', default=False, help="Output stuff")
 @click.argument('path', type=click.File(mode='w'), default=None)
 @click.pass_obj
-def output_deenrol_old_students(obj, path):
+def output_deenrol_old_students(obj, path, verbose):
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
     +moodle
 
+    from IPython import embed;embed()
+
     for idnumber in moodle.students.keys() - autosend.students.keys():
         enrollment_data = moodle.enrollments.get(idnumber)
+        if enrollment_data is None:
+            verbose and print("No enrollment info for {}".format(idnumber))
         if enrollment_data:
             for enrollment in enrollment_data.enrollments:
                 course, group, role = enrollment
+                verbose and print('\t', idnumber, course)
                 path.write("deenrol_user_from_course {0} {1}\n".format(idnumber, course))
+        else:
+            verbose and print("No enrollments {}".format(idnumber))
+
 
 @ssisdss_test.command("output_remove_old_groups")
 @click.argument('path', type=click.File(mode='w'), default=None)

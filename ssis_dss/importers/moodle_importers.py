@@ -173,7 +173,7 @@ class MoodleEnrollmentsImporter(MoodleImporter):
             yield {
                 'idnumber': user_idnumber,
                 'courses': [course],
-                'groups': [group],
+                'groups': ['' if group is None else group],
                 'roles': [role]
             }
 

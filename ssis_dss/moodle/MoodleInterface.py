@@ -361,6 +361,26 @@ class MoodleInterface(MoodleInter):
             cohort.timemodified = time_now()
             session.add(cohort)
 
+    def get_user_enrollments(self):
+
+        with self.db_session() as session:
+            enrollments = session.query(
+                User.idnumber,
+                Enrol.enrol,
+                Course.idnumber
+            ).select_from(UserEnrolment).\
+                join(User, User.id == UserEnrolment.userid).\
+                join(Enrol, Enrol.id == UserEnrolment.enrolid).\
+                join(Course, Course.id == Enrol.courseid).\
+            filter(
+                and_(
+                    Enrol.enrol == 'manual',
+                )
+            )
+
+        yield from enrollments.all()
+
+
     def bell_schedule(self):
         """
         Query that represents the schedule, using Moodle's terms

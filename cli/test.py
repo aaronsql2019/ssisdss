@@ -85,22 +85,24 @@ def output_group_additions(obj):
         if action.idnumber.startswith('4813P'):
             print(action)
 
-@ssisdss_test.command("output_deenrol_old_parents")
+@ssisdss_test.command("output_deenrol_old_students_parents")
 @click.argument('path', type=click.File(mode='w'), default=None)
 @click.pass_obj
-def output_deenrol_old_parents(obj, path):
+def output_deenrol_old_parents_students(obj, path):
     autosend = AutosendTree()
     moodle = MoodleTree()
     +autosend
     +moodle
 
-    for idnumber in moodle.parents.keys() - autosend.parents.keys():
-        if not idnumber.endswith('PP'):
-            enrollment_data = moodle.enrollments.get(idnumber)
-            if enrollment_data:
-                for enrollment in enrollment_data.enrollments:
-                    course, group, role = enrollment
-                    path.write("deenrol_user_from_course {0} {1}\n".format(idnumber, course))
+    from ssis_dss.importers.moodle_importers import MoodleImporter
+    moodledb = MoodleImporter(moodle, moodle.students)
+
+    old_parents = moodle.parents.keys() - autosend.parents.keys()
+    for user_idnumber, enrollment_type, course_idnumber in moodledb.get_user_enrollments():
+        if user_idnumber.endswith('PP'):
+            continue
+        if enrollment_type == 'manual' and course_idnumber and not course_idnumber.startswith('OLP:'):
+            path.write("deenrol_user_from_course {0} {1}\n".format(user_idnumber, course_idnumber))
 
 @ssisdss_test.command("output_deenrol_old_students")
 @click.option('--verbose', default=False, help="Output stuff")

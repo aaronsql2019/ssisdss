@@ -23,7 +23,10 @@ class AbstractTree(DataStoreTree):
                 link_output = []
                 for link in links:
                     lobj = self.users.get(link)
-                    link_output.append( "\t=> Linked to {0.kind} {0.name} ({0.idnumber})".format(lobj) )
+                    if not lobj:
+                        link_output.append( "\t=> Linked to {}, but NOT FOUND".format(link))
+                    else:
+                        link_output.append( "\t=> Linked to {0.kind} {0.name} ({0.idnumber})".format(lobj) )
                 print("\n".join(link_output))
                 # if hasattr(user, 'parents'):
                 #     parent_output = []

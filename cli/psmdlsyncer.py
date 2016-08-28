@@ -5,17 +5,25 @@ Command line stuff
 from ssis_dss.trees import AutosendTree, MoodleTree
 
 import click
-#import ssis_dss   #(see comment on line 14 for why this is commented out)
-
 from cli.cli import CLIObject
+import os
 
+#FIXME: Why can't I use ssis_dss_settings here?
+default_cache = '/tmp/ssisdss.cache'
+if not default_cache:
+    default_cache = '/tmp/default.cache'
+    print("You do not have required setting {} in DEFAULT, using {}".format('path_to_cache', default_cache))
+if not os.path.exists(default_cache):
+    # touch it
+    open(default_cache, 'a').close()
+        
 @click.group()
 @click.option('--test/--dont_test', default=False, help="Uses test information")
 @click.option('--template', type=click.STRING, default=None, help="Define the template")
-@click.option('--readfromdisk', type=click.File(mode='rb'), default=None, help="Readin pickled data")
-@click.option('--writetodisk', type=click.File(mode='wb'), default=None, help="Write pickled data")
+@click.option('--read/--dontread', is_flag=True, default=False, help="Readin pickled data")
+@click.option('--write/--dontwrite', is_flag=True, default=True, help="Write pickled data")
 @click.pass_context
-def psmdlsyncer(ctx, test, template, readfromdisk, writetodisk):
+def psmdlsyncer(ctx, test, template, read, write):
     # Doesn't do much now, but leave it as boilerplate for when there are global flags n such
     ctx.obj = CLIObject(test)
     ctx.obj.template = template
@@ -25,7 +33,7 @@ def psmdlsyncer(ctx, test, template, readfromdisk, writetodisk):
     else:
         template = "ssis_dss.templates.templates.{}".format(template)
 
-    ctx.obj.init_psmdlsyncer(template, readfromdisk, writetodisk)
+    ctx.obj.init_psmdlsyncer(template, read, write)
 
 @psmdlsyncer.command("go")
 @click.pass_obj
@@ -78,12 +86,6 @@ def psmdlsyncer_inspect(obj):
     """
 
     """
-    # for item in obj.source - obj.dest:
-    #     print(item.message)
-    print("Reading in autosend...")
-    +obj.source
-    print("Reading in moodle...")
-    +obj.dest
     autosend = obj.source
     moodle = obj.dest
 

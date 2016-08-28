@@ -116,8 +116,7 @@ class AutosendStudent(BaseAutosend, BaseStudent):
 
     @property
     def username(self):
-        return self.idnumber
-        #return (self.name + self._year_of_graduation()).lower().replace(' ', '')
+        return (self.name + self._year_of_graduation()).lower().replace(' ', '')
 
     @property
     def _parents(self):

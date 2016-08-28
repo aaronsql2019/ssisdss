@@ -121,17 +121,21 @@ class ScheduleImporter(AutosendImporter):
         """
         short, _ = convert_short_long(kwargs['course'], "")
         kwargs['course'] = short
-        # No need to lookup the course...
-        #course = self._tree.courses.get(short)
+
         staff = self._tree.staff.get(kwargs['staff_idnumber'])
-        if not staff:
-            print("Staff member {} in schedule but not in staff info?".format(kwargs['staff_idnumber']))
-            staff = type('Staff', (), {'lastname':'unknownstaff'})
-        kwargs['group'] = "{}-{}-{}".format(staff.lastname.lower(), short.lower(), kwargs['section'].lower())
+        student = self._tree.students.get(kwargs['student_idnumber'])
+        if not staff or not student:
+            return None
+        grade = student._grade
+        kwargs['grade'] = grade
+        kwargs['_old_group'] = "{}-{}-{}".format(staff.lastname.lower(), short.lower(), kwargs['section'].lower())
+        kwargs['group'] = "{}-{}-{}-{}".format(staff.lastname.lower(), short.lower(), grade, kwargs['section'].lower())
         return kwargs
 
     def filter_out(self, **kwargs):
-        return kwargs['course'].startswith('X')
+        student = self._tree.students.get(kwargs['student_idnumber'])
+        staff = self._tree.staff.get(kwargs['staff_idnumber'])
+        return student is None or kwargs['course'].startswith('X')
 
 class CourseImporter(AutosendImporter):
     def kwargs_preprocessor(self, kwargs):
@@ -144,8 +148,6 @@ class CourseImporter(AutosendImporter):
         kwargs['moodle_shortcode'] = short
         kwargs['name'] = long_
         kwargs['idnumber'] = short
-        if shortcode == 'MATHSD11':
-            from IPython import embed;embed();exit()
         return kwargs
 
     def filter_out(self, **kwargs):
@@ -168,7 +170,9 @@ class AutosendGroupImporter(DefaultImporter):
             student = item.student_idnumber
             teacher = item.staff_idnumber
             course = item.course
+            _old_group = item._old_group
             group = item.group
+            grade = item.grade
             section = item.section
 
             sobj = self._tree.students.get(student)
@@ -181,7 +185,9 @@ class AutosendGroupImporter(DefaultImporter):
 
             yield {
                 'idnumber': group,
+                '_old_group': _old_group,
                 'course': course,
+                'grade': grade,
                 'section': section,
                 'members': set(members),
             }

@@ -127,30 +127,55 @@ class MoodleGroupImporter(MoodleImporter):
     #     return len(kwargs['idnumber'].split('-')) != 3
 
     def readin(self):
-        for group_idnumber, user_idnumber in self.get_groups():
+        for group_id, group_idnumber, course_idnumber, user_idnumber in self.get_groups():
             if '-' in group_idnumber:
-                split = group_idnumber.split('-') 
-                section = group_idnumber.split('-')[-1]
+                split = group_idnumber.split('-')
+                if len(split) == 4:
+                    grade = split[-2]
+                elif len(split) == 3:
+                    # may not have been migrated yet
+                    grade = ''
+                teacher = split[0]
+                section = split[-1]
             else:
                 section = ''
+                grade = ''
+                teacher = ''
+
+            if not group_idnumber:
+                # Manual groups can be created without idnumber, in which case we should just move on
+                continue
 
             yield {
                 'idnumber': group_idnumber,
+                'grade': grade,
                 'section': section,
                 '_short_code': '',
+                '_id': group_id,
+                'course': course_idnumber,
                 'members': set([user_idnumber])
             }
 
-        for group in self.get_all_groups():
-            if '-' in group_idnumber:
-                split = group_idnumber.split('-') 
-                section = group_idnumber.split('-')[-1]
+        for group, course in self.get_all_groups():
+            if not group.idnumber:
+                continue
+
+            if '-' in group.idnumber:
+                split = group.idnumber.split('-') 
+                section = group.idnumber.split('-')[-1]
+                if len(split) == 4:
+                    grade = split[-2]
+                else:
+                    grade = ''
             else:
                 section = ''
 
             yield {
                 'idnumber': group.idnumber,
+                'grade': grade,
                 'section': section,
+                'course': course.idnumber,
+                '_id': group.id,
                 'members': set()
             }
 

@@ -26,6 +26,17 @@ class MoodleTemplates(DefaultTemplate):
 		self.moodledb = MoodleDB()
 		self.php = PHP()
 
+class MoodleEnrollmentsOnly(MoodleTemplates):
+	def add_enrollments_to_enrollments(self, action):
+		user = action.dest
+		course, group, role = action.attribute
+		return self.php.enrol_user_into_course(user.idnumber, course, group, group, role) # just pass the whole schedule object itself
+
+	def remove_enrollments_from_enrollments(self, action):
+		user = action.dest
+		course, group, role = action.attribute
+		return self.php.unenrol_user_from_course(user.idnumber, course)
+
 class MoodleFirstRunTemplate(MoodleTemplates):
 	"""
 	Implements initial account creations and creates groups as needed

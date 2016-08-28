@@ -392,6 +392,8 @@ class MoodleInterface(MoodleInter):
         """
 
         with self.db_session() as session:
+
+            # FIXME What to do about cases where they are not in a group but also don't want duplicates?
             schedule = session.query(Course.idnumber.label("courseID"), 
                         User.idnumber.label("userID"), 
                         User.username.label('username'), 
@@ -844,9 +846,10 @@ class MoodleInterface(MoodleInter):
 
     def get_groups(self):
         with self.db_session() as session:
-            statement = session.query(Group.idnumber, User.idnumber).\
+            statement = session.query(Group.id, Group.idnumber, Course.idnumber, User.idnumber).\
                 select_from(GroupsMember).\
                     join(Group, GroupsMember.groupid == Group.id).\
+                    join(Course, Course.id == Group.courseid).\
                     outerjoin(User, GroupsMember.userid == User.id)
         return statement.all()
 
@@ -855,7 +858,9 @@ class MoodleInterface(MoodleInter):
         Get all groups
         """
         with self.db_session() as session:
-            statement = session.query(Group)
+            statement = session.query(Group, Course).\
+                select_from(Group).\
+                    join(Course, Course.id == Group.courseid)
         return statement.all()
 
     def clear_active_timetable_data(self):

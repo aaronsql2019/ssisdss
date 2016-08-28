@@ -166,7 +166,6 @@ def output_remove_old_groups(obj, path):
             if group and group.idnumber:
                 path.write("delete_group_for_course '{0.idnumber}'\n".format(group))
 
-
 @ssisdss_test.command("output_course_mappings")
 @click.argument('path', type=click.File(mode='w'), default=None)
 @click.pass_obj
@@ -186,3 +185,54 @@ def output_remove_old_courses(obj, path):
     for course in autosend.courses.values():
         comment = "present" if course.idnumber in existing_courses else "MISSING"
         print("{comment}: {orig} -> {translated}".format(orig=course._shortcode, translated=course.moodle_shortcode, comment=comment))
+
+@ssisdss_test.command("output_group_migration")
+@click.argument('path', type=click.File(mode='w'), default=None)
+@click.pass_obj
+def output_group_migration(obj, path):
+    autosend = AutosendTree()
+    moodle = MoodleTree()
+    click.echo("processing autosend...")
+    +autosend
+    click.echo("processing moodle...")
+    +moodle
+
+    from ssis_dss.importers.moodle_importers import MoodleImporter
+    moodle_db = MoodleImporter(moodle, moodle.students)
+
+    homework_group_ids = set()
+    for homework in moodle_db.get_rows_in_table('block_homework'):
+        homework_group_ids.add(homework.groupid)
+
+    for group in moodle.groups.values():
+        grades = set()
+        for member_idnumber in group.members:
+            student = autosend.students.get(member_idnumber)
+            if student:
+                grades.add(student._grade)
+
+        new_group = [ag for ag in autosend.groups.values() if ag._old_group == group.idnumber]
+        old_name = moodle_db.get_column_from_row('group', 'name', id=group._id)
+        if not new_group:
+            new_name = '[OLD] {}'.format(old_name)
+            moodle_db.update_table('group', where=dict(idnumber=group.idnumber), name=new_name)
+            path.write('Found OLD group, renamed: {}\n'.format(group.idnumber))
+            continue
+
+        new_group = new_group[0].idnumber
+        old_name = moodle_db.get_column_from_row('group', 'name', id=group._id)
+
+        if len(list(grades)) > 1:
+            path.write("Group {} in course {} has more than one grade: {}\n".format(group.idnumber, group.course, grades))
+            new_name = '[OLD] {}'.format(old_name)
+            moodle_db.update_table('group', where=dict(idnumber=group.idnumber), name=new_name)
+        elif len(list(grades)) == 1:
+            old_name_split = old_name.split(' ')
+            new_name = "{} course{} sec{}.{}".format(old_name_split[0], old_name_split[1], grades.pop(), old_name_split[2])
+            path.write("Changed group idnumber from {} to {} in course {}\n".format(group.idnumber, new_group, group.course))
+            moodle_db.update_table('group', where=dict(idnumber=group.idnumber), name=new_name)
+            moodle_db.update_table('group', where=dict(idnumber=group.idnumber), idnumber=new_group)
+        else:
+            new_name = '[OLD] {}'.format(old_name)
+            moodle_db.update_table('group', where=dict(idnumber=group.idnumber), name=new_name)
+            path.write("Group {} with no members, cannot know grade!\n".format(group.idnumber))

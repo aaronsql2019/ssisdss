@@ -200,10 +200,6 @@ def output_group_migration(obj, path):
     from ssis_dss.importers.moodle_importers import MoodleImporter
     moodle_db = MoodleImporter(moodle, moodle.students)
 
-    homework_group_ids = set()
-    for homework in moodle_db.get_rows_in_table('block_homework'):
-        homework_group_ids.add(homework.groupid)
-
     for group in moodle.groups.values():
         grades = set()
         for member_idnumber in group.members:
